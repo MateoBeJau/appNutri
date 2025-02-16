@@ -61,13 +61,13 @@ const Sidebar = () => {
         <p className="text-slate-500">Welcome back,</p>
         <a href="#" className="inline-flex space-x-2 items-center">
           <span>
-            <Image
+            {/* <Image
               className="rounded-full w-8 h-8"
               src=""
-              alt=""
+              alt="Mateo"
               width={50}
               height={50}
-            />
+            /> */}
           </span>
           <span className="text-sm md:text-base font-bold">Mateo Bertoni</span>
         </a>

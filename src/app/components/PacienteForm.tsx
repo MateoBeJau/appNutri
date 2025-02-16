@@ -26,14 +26,37 @@ export default function PacienteForm() {
     mode: "onChange",
   });
 
-  const onSubmit = (data: any) => {
-    console.log("Datos del paciente enviados:", data);
-    setSuccessMessage("✅ Paciente guardado con éxito!");
-    setTimeout(() => setSuccessMessage(null), 3000);
-    reset();
-    setStep(1);
+  const onSubmit = async (data: any) => {
+    try {
+      // Calcular el IMC antes de enviar
+      const peso = parseFloat(data.peso);
+      const altura = parseFloat(data.altura);
+      const imc = peso / ((altura / 100) ** 2);
+  
+      const response = await fetch("/api/pacientes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...data,
+          imc: imc.toFixed(2), // Guardamos el IMC calculado
+          gustos: data.gustos?.map((g: any) => g.name) || [],
+          alergias: data.alergias?.map((a: any) => a.name) || [],
+        }),
+      });
+  
+      if (response.ok) {
+        setSuccessMessage("✅ Paciente guardado con éxito!");
+        setTimeout(() => setSuccessMessage(null), 3000);
+        reset(); // Limpia el formulario
+        setStep(1); // Vuelve al primer paso del formulario
+      } else {
+        console.error("Error al guardar el paciente");
+      }
+    } catch (error) {
+      console.error("Error en la solicitud:", error);
+    }
   };
-
+  
   const handleNextStep = async () => {
     let camposRequeridos: string[] = [];
 
