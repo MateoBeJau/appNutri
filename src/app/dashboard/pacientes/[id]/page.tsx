@@ -52,7 +52,6 @@ export default function PerfilPaciente() {
       if (!response.ok) throw new Error("Error al eliminar paciente");
 
       toast.success("✅ Paciente eliminado con éxito");
-
       router.push("/dashboard/pacientes");
       router.refresh();
     } catch (error) {
@@ -113,32 +112,32 @@ export default function PerfilPaciente() {
 
       {/* 🔙 Botones de Acción */}
       <div className="flex justify-between mt-6">
-        <Link href="/dashboard/pacientes" className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600">
+        <Link href="/dashboard/pacientes" className="bg-gray-500 text-white px-6 py-2 rounded-md hover:bg-gray-600">
           ⬅ Volver a la lista
         </Link>
 
         <div className="flex gap-3">
-          <Link href={`/dashboard/pacientes/${paciente.id}/editar`} className="bg-yellow-500 text-white px-4 py-2 rounded-md hover:bg-yellow-600">
+          <Link href={`/dashboard/pacientes/${paciente.id}/editar`} className="bg-yellow-500 text-white px-6 py-2 rounded-md hover:bg-yellow-600">
             ✏️ Editar
           </Link>
 
-          <button className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600" onClick={() => setIsModalOpen(true)}>
+          <button className="bg-red-500 text-white px-6 py-2 rounded-md hover:bg-red-600" onClick={() => setIsModalOpen(true)}>
             🗑️ Eliminar
           </button>
         </div>
       </div>
 
-      {/* 📌 MODAL SIMPLE MANUAL */}
+      {/* 📌 MODAL DE CONFIRMACIÓN */}
       {isModalOpen && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white p-6 rounded-lg shadow-lg w-80 text-center">
             <h2 className="text-lg font-bold text-gray-800">⚠️ Confirmar Eliminación</h2>
             <p className="text-gray-600 mt-2">¿Seguro que deseas eliminar este paciente?</p>
             <div className="flex justify-center mt-4 gap-4">
-              <button onClick={() => setIsModalOpen(false)} className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600">
+              <button onClick={() => setIsModalOpen(false)} className="bg-gray-500 text-white px-6 py-2 rounded-md hover:bg-gray-600">
                 Cancelar
               </button>
-              <button onClick={handleEliminarPaciente} disabled={deleting} className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600">
+              <button onClick={handleEliminarPaciente} disabled={deleting} className="bg-red-500 text-white px-6 py-2 rounded-md hover:bg-red-600">
                 {deleting ? "Eliminando..." : "Sí, eliminar"}
               </button>
             </div>

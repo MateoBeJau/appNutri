@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import DataTable from "react-data-table-component";
 import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 
 type Paciente = {
   id: string;
@@ -19,6 +20,9 @@ export default function ListadoPacientes() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [filterGenero, setFilterGenero] = useState("");
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedPaciente, setSelectedPaciente] = useState<Paciente | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -33,6 +37,7 @@ export default function ListadoPacientes() {
       setFilteredPacientes(data.pacientes);
     } catch (error) {
       console.error("Error al obtener pacientes:", error);
+      toast.error("❌ No se pudo cargar la lista de pacientes.");
     } finally {
       setLoading(false);
     }
@@ -50,22 +55,34 @@ export default function ListadoPacientes() {
     setFilteredPacientes(filtrados);
   }, [search, filterGenero, pacientes]);
 
+  // 📌 Abrir modal de confirmación antes de eliminar
+  const confirmarEliminarPaciente = (paciente: Paciente) => {
+    setSelectedPaciente(paciente);
+    setIsModalOpen(true);
+  };
+
   // 📌 Función para eliminar paciente
-  const handleEliminarPaciente = async (id: string) => {
-    const confirmar = confirm("⚠️ ¿Seguro que deseas eliminar este paciente?");
-    if (!confirmar) return;
+  const handleEliminarPaciente = async () => {
+    if (!selectedPaciente) return;
+
+    setDeletingId(selectedPaciente.id);
+    setIsModalOpen(false);
 
     try {
-      const response = await fetch(`/api/pacientes/${id}`, { method: "DELETE" });
+      const response = await fetch(`/api/pacientes/${selectedPaciente.id}`, { method: "DELETE" });
       if (!response.ok) throw new Error("Error al eliminar paciente");
 
       // ✅ Actualizar la lista después de eliminar
-      setPacientes((prev) => prev.filter((p) => p.id !== id));
-      setFilteredPacientes((prev) => prev.filter((p) => p.id !== id));
-      alert("✅ Paciente eliminado con éxito");
+      setPacientes((prev) => prev.filter((p) => p.id !== selectedPaciente.id));
+      setFilteredPacientes((prev) => prev.filter((p) => p.id !== selectedPaciente.id));
+
+      toast.success("✅ Paciente eliminado con éxito");
     } catch (error) {
       console.error("Error al eliminar paciente:", error);
-      alert("❌ No se pudo eliminar el paciente");
+      toast.error("❌ No se pudo eliminar el paciente.");
+    } finally {
+      setDeletingId(null);
+      setSelectedPaciente(null);
     }
   };
 
@@ -100,14 +117,17 @@ export default function ListadoPacientes() {
           </button>
 
           <button
-            onClick={() => handleEliminarPaciente(row.id)}
-            className="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 transition duration-200"
+            onClick={() => confirmarEliminarPaciente(row)}
+            className={`bg-red-500 text-white px-3 py-1 rounded-md transition duration-200 ${
+              deletingId === row.id ? "opacity-50 cursor-not-allowed" : "hover:bg-red-600"
+            }`}
+            disabled={deletingId === row.id}
           >
-            🗑️ 
+            {deletingId === row.id ? "⏳" : "🗑️"}
           </button>
         </div>
       ),
-      ignoreRowClick: true, // Evita que el click en los botones abra el perfil
+      ignoreRowClick: true,
       button: true,
     },
   ];
@@ -154,6 +174,28 @@ export default function ListadoPacientes() {
           onRowClicked={(row) => router.push(`/dashboard/pacientes/${row.id}`)}
         />
       </div>
+
+      {/* 📌 MODAL DE CONFIRMACIÓN */}
+      {isModalOpen && selectedPaciente && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg text-center">
+            <h2 className="text-lg font-bold">⚠️ Confirmar Eliminación</h2>
+            <p className="text-gray-600 mt-2">
+              ¿Seguro que deseas eliminar a <strong>{selectedPaciente.nombre}</strong>?
+            </p>
+            <button
+              onClick={handleEliminarPaciente}
+              disabled={deletingId === selectedPaciente.id}
+              className="bg-red-500 text-white px-6 py-2 rounded-md mt-4"
+            >
+              {deletingId === selectedPaciente.id ? "Eliminando..." : "Sí, eliminar"}
+            </button>
+            <button onClick={() => setIsModalOpen(false)} className="bg-gray-500 text-white px-6 py-2 rounded-md ml-4">
+              Cancelar
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
