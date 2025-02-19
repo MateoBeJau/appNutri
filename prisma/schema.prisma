@@ -8,16 +8,26 @@ datasource db {
 }
 
 model Paciente {
-  id              String   @id @default(uuid())
-  nombre          String
-  fechaNacimiento DateTime
-  genero          String
-  telefono        String
-  email           String
-  peso            Float
-  altura          Float
-  imc             Float
-  gustos          String[]
-  alergias        String[]
-  createdAt       DateTime @default(now())
+  id                      String   @id @default(uuid())
+  nombre                  String
+  fechaNacimiento         DateTime?  // Temporalmente opcional
+  genero                  String
+  telefono                String
+  email                   String
+  peso                    Float
+  altura                  Float
+  imc                     Float
+  patologias              String[] @default([])
+  gustos                  String[] @default([])
+  alergias                String[] @default([])
+  horariosComida          String?
+  tiemposTrabajo          String?
+  frecuenciaEntrenamiento String?
+  aguaDiaria              Float?
+  consumoAlcoholTabaco    String?
+  horasSueno              Float?
+  objetivoCorto           String?
+  objetivoLargo           String?
+  notas                   String?
+  createdAt               DateTime @default(now())
 }

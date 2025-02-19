@@ -4,15 +4,17 @@ import { useEffect, useState } from "react";
 import DataTable from "react-data-table-component";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
+import Link from "next/link";
 
-type Paciente = {
+interface Paciente {
   id: string;
   nombre: string;
   fechaNacimiento: string;
-  genero: string;
   telefono: string;
   email: string;
-};
+  genero: string;
+  createdAt: string;
+}
 
 export default function ListadoPacientes() {
   const [pacientes, setPacientes] = useState<Paciente[]>([]);
@@ -86,50 +88,87 @@ export default function ListadoPacientes() {
     }
   };
 
+  // 🔹 Calcular edad desde `fechaNacimiento`
+  const calcularEdad = (fechaNacimiento: string) => {
+    const nacimiento = new Date(fechaNacimiento);
+    const hoy = new Date();
+    let edad = hoy.getFullYear() - nacimiento.getFullYear();
+    const mesDiff = hoy.getMonth() - nacimiento.getMonth();
+    if (mesDiff < 0 || (mesDiff === 0 && hoy.getDate() < nacimiento.getDate())) {
+      edad--;
+    }
+    return edad;
+  };
+
+  // 🔹 Formatear `createdAt` en formato DD/MM/YYYY
+  const formatearFecha = (fecha: string) => {
+    const date = new Date(fecha);
+    const dia = date.getDate().toString().padStart(2, "0");
+    const mes = (date.getMonth() + 1).toString().padStart(2, "0");
+    const anio = date.getFullYear();
+    return `${dia}/${mes}/${anio}`;
+  };
+
   // 📌 Definir columnas de la tabla con Botones de Acciones
   const columns = [
     {
       name: "Nombre",
-      selector: (row: Paciente) => row.nombre,
+      selector: (row: Paciente) => (
+        <Link href={`/dashboard/pacientes/${row.id}`} passHref>
+          <span className="text-blue-600 font-semibold hover:text-blue-800 hover:underline transition duration-200">
+            {row.nombre}
+          </span>
+        </Link>
+      ),
       sortable: true,
-      minWidth: "180px",
+      minWidth: "200px",
+    },
+    
+    {
+      name: "Edad",
+      selector: (row: Paciente) => calcularEdad(row.fechaNacimiento) + " años",
+      sortable: true,
+      minWidth: "120px",
     },
     {
-      name: "Fecha Nac.",
-      selector: (row: Paciente) => new Date(row.fechaNacimiento).toLocaleDateString("es-ES"),
-      sortable: true,
+      name: "Teléfono",
+      selector: (row: Paciente) => row.telefono,
       minWidth: "150px",
     },
-    { name: "Género", selector: (row: Paciente) => row.genero, minWidth: "120px" },
-    { name: "Teléfono", selector: (row: Paciente) => row.telefono, minWidth: "150px" },
-    { name: "Email", selector: (row: Paciente) => row.email, minWidth: "250px" },
+    {
+      name: "Email",
+      selector: (row: Paciente) => row.email,
+      minWidth: "200px",
+    },
 
-    // 📌 Nueva columna para acciones (Editar / Eliminar)
+    {
+      name: "Fecha Registro",
+      selector: (row: Paciente) => formatearFecha(row.createdAt),
+      sortable: true,
+      minWidth: "100px",
+    },
     {
       name: "Acciones",
       cell: (row: Paciente) => (
         <div className="flex gap-2">
-          <button
-            onClick={() => router.push(`/dashboard/pacientes/${row.id}/editar`)}
-            className="bg-yellow-500 text-white px-3 py-1 rounded-md hover:bg-yellow-600 transition duration-200"
-          >
-            ✏️ 
-          </button>
-
+          <Link href={`/dashboard/pacientes/${row.id}/editar`} passHref>
+            <button className="bg-yellow-500 text-white px-3 py-1 rounded-md hover:bg-yellow-600">
+              ✏️
+            </button>
+          </Link>
           <button
             onClick={() => confirmarEliminarPaciente(row)}
-            className={`bg-red-500 text-white px-3 py-1 rounded-md transition duration-200 ${
-              deletingId === row.id ? "opacity-50 cursor-not-allowed" : "hover:bg-red-600"
-            }`}
-            disabled={deletingId === row.id}
+            className="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600"
           >
-            {deletingId === row.id ? "⏳" : "🗑️"}
+            🗑️
           </button>
         </div>
       ),
       ignoreRowClick: true,
+      allowOverflow: true,
       button: true,
-    },
+    }
+    
   ];
 
   return (
@@ -158,22 +197,16 @@ export default function ListadoPacientes() {
       </div>
 
       {/* 📌 Tabla con paginación y ordenación */}
-      <div className="overflow-hidden rounded-xl shadow-md">
-        <DataTable
-          columns={columns}
-          data={filteredPacientes}
-          progressPending={loading}
-          pagination
-          highlightOnHover
-          responsive
-          customStyles={{
-            tableWrapper: { style: { overflowX: "auto" } },
-            headRow: { style: { backgroundColor: "#f3f4f6", fontSize: "16px", fontWeight: "600" } },
-            rows: { style: { fontSize: "15px", borderBottom: "1px solid #e5e7eb" } },
-          }}
-          onRowClicked={(row) => router.push(`/dashboard/pacientes/${row.id}`)}
-        />
-      </div>
+      <DataTable
+        columns={columns}
+        data={filteredPacientes}
+        progressPending={loading}
+        pagination
+        highlightOnHover
+        responsive
+        striped
+        noDataComponent={<p className="text-center text-gray-600">No hay pacientes registrados.</p>}
+      />
 
       {/* 📌 MODAL DE CONFIRMACIÓN */}
       {isModalOpen && selectedPaciente && (
@@ -183,12 +216,8 @@ export default function ListadoPacientes() {
             <p className="text-gray-600 mt-2">
               ¿Seguro que deseas eliminar a <strong>{selectedPaciente.nombre}</strong>?
             </p>
-            <button
-              onClick={handleEliminarPaciente}
-              disabled={deletingId === selectedPaciente.id}
-              className="bg-red-500 text-white px-6 py-2 rounded-md mt-4"
-            >
-              {deletingId === selectedPaciente.id ? "Eliminando..." : "Sí, eliminar"}
+            <button onClick={handleEliminarPaciente} className="bg-red-500 text-white px-6 py-2 rounded-md mt-4">
+              Sí, eliminar
             </button>
             <button onClick={() => setIsModalOpen(false)} className="bg-gray-500 text-white px-6 py-2 rounded-md ml-4">
               Cancelar
