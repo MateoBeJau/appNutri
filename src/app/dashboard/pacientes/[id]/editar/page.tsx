@@ -61,61 +61,58 @@ export default function EditarPacienteForm() {
     try {
       const response = await fetch(`/api/pacientes/${id}`);
       if (!response.ok) throw new Error("Paciente no encontrado");
-
+  
       const data = await response.json();
-
+  
       // Convertir `fechaNacimiento` al formato YYYY-MM-DD
       if (data.fechaNacimiento) {
         data.fechaNacimiento = new Date(data.fechaNacimiento)
           .toISOString()
           .split("T")[0];
       }
-
-      // Convertir listas en formato `{ value: string }`
-      data.gustos = data.gustos?.map((item: string) => ({ value: item })) || [];
-      data.alergias =
-        data.alergias?.map((item: string) => ({ value: item })) || [];
-      data.patologias =
-        data.patologias?.map((item: string) => ({ value: item })) || [];
-
+  
+      // 🔹 Convertir listas en el formato adecuado
+      data.gustos = data.gustos?.map((item: string) => ({ id: String(Date.now()), name: item })) || [];
+      data.alergias = data.alergias?.map((item: string) => ({ id: String(Date.now()), name: item })) || [];
+      data.patologias = data.patologias?.map((item: string) => ({ id: String(Date.now()), name: item })) || [];
+  
       // Cargar datos en el formulario
-      Object.keys(data).forEach((key) =>
-        setValue(key as keyof typeof data, data[key])
-      );
+      Object.keys(data).forEach((key) => setValue(key as keyof typeof data, data[key]));
+  
+      console.log("Paciente cargado:", data);
     } catch (error) {
       toast.error("❌ Error al cargar el paciente.");
     } finally {
       setLoading(false);
     }
   };
+  
 
   const onSubmit = async (data: any) => {
     setIsSaving(true);
     setErrorMessage(null);
-
-    // Calcular el IMC antes de enviar
-    const peso = parseFloat(data.peso);
-    const altura = parseFloat(data.altura);
-    const imc = peso / (altura / 100) ** 2;
-
+  
+    // Transformar listas para enviarlas como arrays de strings
     const pacienteActualizado = {
       ...data,
-      imc: imc.toFixed(2),
+      imc: (parseFloat(data.peso) / ((parseFloat(data.altura) / 100) ** 2)).toFixed(2),
       fechaNacimiento: new Date(data.fechaNacimiento).toISOString(),
-      gustos: data.gustos?.map((g: any) => g.value) || [],
-      alergias: data.alergias?.map((a: any) => a.value) || [],
-      patologias: data.patologias?.map((p: any) => p.value) || [],
+      gustos: data.gustos?.map((g: any) => g.name) || [],
+      alergias: data.alergias?.map((a: any) => a.name) || [],
+      patologias: data.patologias?.map((p: any) => p.name) || [],
     };
-
+  
+    console.log("Datos a enviar en edición:", pacienteActualizado);
+  
     try {
       const response = await fetch(`/api/pacientes/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(pacienteActualizado),
       });
-
+  
       if (!response.ok) throw new Error("Error al actualizar paciente");
-
+  
       toast.success("✅ Paciente actualizado con éxito!");
       setTimeout(() => router.push("/dashboard/pacientes"), 1500);
     } catch (error) {
@@ -124,7 +121,7 @@ export default function EditarPacienteForm() {
       setIsSaving(false);
     }
   };
-
+  
   const handleNextStep = async () => {
     let camposRequeridos: string[] = [];
 

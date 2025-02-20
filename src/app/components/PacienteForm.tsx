@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import toast from "react-hot-toast";
 import DatosBasicos from "./DatosBasicos";
 import DatosClinicos from "./DatosClinicos";
 import ObjetivosNutricionales from "./ObjetivosNutricionales";
@@ -12,7 +13,7 @@ import { ProgressBar } from "./progress-bar";
 
 export default function PacienteForm() {
   const [step, setStep] = useState<number>(1);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState<boolean>(false);
 
   const {
     register,
@@ -27,36 +28,43 @@ export default function PacienteForm() {
   });
 
   const onSubmit = async (data: any) => {
+    setIsSaving(true);
+    toast.loading("Guardando paciente...");
+
+    // Transformar arrays de objetos en arrays de strings
+    const pacienteData = {
+      ...data,
+      imc: (parseFloat(data.peso) / ((parseFloat(data.altura) / 100) ** 2)).toFixed(2),
+      fechaNacimiento: new Date(data.fechaNacimiento).toISOString(),
+      gustos: data.gustos?.map((g: any) => g.name) || [],
+      alergias: data.alergias?.map((a: any) => a.name) || [],
+      patologias: data.patologias?.map((p: any) => p.name) || [],
+    };
+
     try {
-      // Calcular el IMC antes de enviar
-      const peso = parseFloat(data.peso);
-      const altura = parseFloat(data.altura);
-      const imc = peso / ((altura / 100) ** 2);
-  
       const response = await fetch("/api/pacientes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...data,
-          imc: imc.toFixed(2), // Guardamos el IMC calculado
-          gustos: data.gustos?.map((g: any) => g.name) || [],
-          alergias: data.alergias?.map((a: any) => a.name) || [],
-        }),
+        body: JSON.stringify(pacienteData),
       });
-  
-      if (response.ok) {
-        setSuccessMessage("✅ Paciente guardado con éxito!");
-        setTimeout(() => setSuccessMessage(null), 3000);
-        reset(); // Limpia el formulario
-        setStep(1); // Vuelve al primer paso del formulario
-      } else {
-        console.error("Error al guardar el paciente");
+
+      if (!response.ok) {
+        throw new Error("Error al guardar el paciente");
       }
+
+      toast.dismiss();
+      toast.success("✅ Paciente guardado con éxito!");
+
+      reset();
+      setStep(1);
     } catch (error) {
-      console.error("Error en la solicitud:", error);
+      toast.dismiss();
+      toast.error("❌ No se pudo guardar el paciente.");
+    } finally {
+      setIsSaving(false);
     }
   };
-  
+
   const handleNextStep = async () => {
     let camposRequeridos: string[] = [];
 
@@ -113,7 +121,6 @@ export default function PacienteForm() {
               <div className="bg-white p-6 shadow-md rounded-lg">
                 <h2 className="text-xl font-semibold text-gray-700 mb-4">🎯 Objetivos Nutricionales</h2>
                 <EstiloVida register={register} errors={errors} />
-                
               </div>
               <div className="bg-white p-6 shadow-md rounded-lg">
                 <h2 className="text-xl font-semibold text-gray-700 mb-4">🏋️ Estilo de Vida</h2>
@@ -161,29 +168,15 @@ export default function PacienteForm() {
               </button>
               <button
                 type="submit"
-                className="w-1/2 bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-md transition-all duration-300"
+                className="w-1/2 bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-md transition-all duration-300 flex justify-center items-center"
+                disabled={isSaving}
               >
-                ✅ Guardar Paciente
+                {isSaving ? "Guardando..." : "✅ Guardar Paciente"}
               </button>
             </div>
           </>
         )}
       </form>
-
-      {/* Mensaje de éxito */}
-      {successMessage && (
-        <div className="mt-6 text-center text-green-600 text-lg font-semibold animate-fade-in">
-          {successMessage}
-        </div>
-      )}
-
-      {/* Visualización de datos ingresados */}
-      <div className="mt-10 p-6 bg-white rounded-md shadow-md">
-        <h2 className="text-lg font-semibold text-gray-700">👀 Vista previa de los datos</h2>
-        <pre className="mt-2 text-sm text-gray-600 bg-gray-200 p-4 rounded-md overflow-auto">
-          {JSON.stringify(watch(), null, 2)}
-        </pre>
-      </div>
     </div>
   );
 }
