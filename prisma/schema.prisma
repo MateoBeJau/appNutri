@@ -30,4 +30,22 @@ model Paciente {
   objetivoLargo           String?
   notas                   String?
   createdAt               DateTime @default(now())
+
+    // Relación con las consultas (appointments)
+  consultas               Consulta[]
+}
+
+
+model Consulta {
+  id           String   @id @default(uuid())
+  pacienteId   String
+  paciente     Paciente @relation(fields: [pacienteId], references: [id])
+  fecha        DateTime  // Fecha completa de la consulta
+  horario      String    // Ej: "9:00 - 9:30"
+  tipoConsulta String    // "primera" | "seguimiento"
+  estado       String    // "pendiente" | "confirmada" | "cancelada"
+  notas        String?   
+
+  // 🔥 Restricción única: Evita duplicados en la misma fecha y horario
+  @@unique([fecha, horario])
 }

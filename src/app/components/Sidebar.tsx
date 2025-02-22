@@ -34,6 +34,16 @@ const menuItems = [
       icon: <IoCalendarOutline size={40} />,
       title: "Agenda",
       subTitle: "Agenda semanal, quincena y mensual",
+      subItems: [
+        {
+          path: "/dashboard/agenda",
+          title: "Calendario-Agenda",
+        },
+        {
+          path: "/dashboard/agenda/calendario",
+          title: "Generar consulta",
+        },
+      ],
     },
   ];
   
