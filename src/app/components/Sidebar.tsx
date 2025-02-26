@@ -1,9 +1,9 @@
 import Image from "next/image";
 import React from "react";
-import { IoCalculator, IoCalendarOutline, IoChatbubbleEllipsesOutline, IoLogoReact, IoPersonOutline } from "react-icons/io5";
+import { IoCalendarOutline, IoChatbubbleEllipsesOutline, IoLogoReact, IoPersonOutline } from "react-icons/io5";
 import SidebarMenuItem from "./SidebarMenuItem";
 import path from "path";
-import { title } from "process";
+
 
 
 const menuItems = [

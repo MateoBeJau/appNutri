@@ -27,7 +27,7 @@ const UpcomingConsultations = () => {
           horario: consulta.horario,
           paciente: consulta.paciente.nombre,
           estado: consulta.estado,
-        })).sort((a, b) => a.fecha - b.fecha);
+        })).sort((a:any, b:any) => a.fecha - b.fecha);
         setConsultations(formattedData);
         setFilteredConsultations(formattedData);
       } catch (error) {

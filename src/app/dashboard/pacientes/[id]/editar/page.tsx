@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { useRouter, useParams } from "next/navigation";
-import Link from "next/link";
+
 import toast from "react-hot-toast";
 import { ProgressBar } from "@/app/components/progress-bar";
 import DatosBasicos from "@/app/components/DatosBasicos";
@@ -25,9 +25,9 @@ export default function EditarPacienteForm() {
     register,
     handleSubmit,
     watch,
-    formState: { errors, isValid },
+    formState: { errors },
     trigger,
-    reset,
+
     control,
     setValue,
   } = useForm({

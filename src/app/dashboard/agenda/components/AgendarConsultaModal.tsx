@@ -118,7 +118,7 @@ export default function AgendarConsultaModal({
 
         {/* 🔹 Selección de Paciente */}
         <div>
-          <label className="block text-gray-700 font-medium flex items-center gap-2">
+          <label className=" text-gray-700 font-medium flex items-center gap-2">
             <User className="w-5 h-5 text-gray-500" />
             Paciente:
           </label>
@@ -138,7 +138,7 @@ export default function AgendarConsultaModal({
 
         {/* 🔹 Selección de Fecha */}
         <div>
-          <label className="block text-gray-700 font-medium flex items-center gap-2">
+          <label className=" text-gray-700 font-medium flex items-center gap-2">
             <CalendarDays className="w-5 h-5 text-gray-500" />
             Fecha:
           </label>
@@ -152,7 +152,7 @@ export default function AgendarConsultaModal({
 
         {/* 🔹 Selección de Horario */}
         <div>
-          <label className="block text-gray-700 font-medium flex items-center gap-2">
+          <label className=" text-gray-700 font-medium flex items-center gap-2">
             <Clock className="w-5 h-5 text-gray-500" />
             Horario:
           </label>
@@ -174,7 +174,7 @@ export default function AgendarConsultaModal({
 
         {/* 🔹 Tipo de Consulta */}
         <div>
-          <label className="block text-gray-700 font-medium flex items-center gap-2">
+          <label className=" text-gray-700 font-medium flex items-center gap-2">
             <ClipboardCheck className="w-5 h-5 text-gray-500" />
             Tipo de Consulta:
           </label>
