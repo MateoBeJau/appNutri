@@ -10,7 +10,7 @@ import AgendarConsultaModal from "./AgendarConsultaModal";
 import ConsultaDetallesModal from "./ConsultaDetalleModal";
 
 
-export default function AgendaCalendar() {
+export default function AgendaCalendario() {
   const [events, setEvents] = useState([]);
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);

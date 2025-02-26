@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
+import type { NextApiRequest, NextApiResponse } from "next";
 
 const prisma = new PrismaClient();
 
@@ -102,11 +103,26 @@ export async function GET() {
       select: {
         id: true,
         nombre: true,
-        fechaNacimiento: true, // Para calcular la edad
+        fechaNacimiento: true,
+        genero: true,
         telefono: true,
         email: true,
-        genero: true,
-        createdAt: true, // Fecha en la que se registró
+        peso: true,
+        altura: true,
+        imc: true,
+        patologias: true,
+        gustos: true,
+        alergias: true,
+        horariosComida: true,
+        tiemposTrabajo: true,
+        frecuenciaEntrenamiento: true,
+        aguaDiaria: true,
+        consumoAlcoholTabaco: true,
+        horasSueno: true,
+        objetivoCorto: true,
+        objetivoLargo: true,
+        notas: true,
+        createdAt: true,
       },
     });
 
@@ -119,3 +135,5 @@ export async function GET() {
     );
   }
 }
+
+

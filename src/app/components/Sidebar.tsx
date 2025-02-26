@@ -40,8 +40,8 @@ const menuItems = [
           title: "Calendario-Agenda",
         },
         {
-          path: "/dashboard/agenda/calendario",
-          title: "Generar consulta",
+          path: "/dashboard/agenda/proximasConsultas",
+          title: "Proximas consultas",
         },
       ],
     },

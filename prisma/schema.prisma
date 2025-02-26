@@ -48,4 +48,5 @@ model Consulta {
 
   // 🔥 Restricción única: Evita duplicados en la misma fecha y horario
   @@unique([fecha, horario])
+  
 }

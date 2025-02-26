@@ -1,12 +1,13 @@
 import React from 'react'
-import AgendaCalendar from './components/AgendaCalendario'
+
+import AgendaCalendario from './components/AgendaCalendario'
 
 const page = () => {
   return (
 <>
 <div>Agenda de los pacientes</div>
 
-<AgendaCalendar/>
+<AgendaCalendario/>
 </>    
   )
 }
