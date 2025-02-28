@@ -18,6 +18,7 @@ export default function ConsultaDetallesModal({
   const [horario, setHorario] = useState("");
   const [estado, setEstado] = useState("");
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [peso, setPeso] = useState("");
 
   useEffect(() => {
     if (consulta) {
@@ -26,6 +27,7 @@ export default function ConsultaDetallesModal({
       setFecha(new Date(consulta.fecha).toISOString().split("T")[0]);
       setHorario(consulta.horario);
       setEstado(consulta.estado);
+      setPeso(consulta.peso ? consulta.peso.toString() : ""); // Convertimos peso a string para el input
     }
   }, [consulta]);
 
@@ -34,9 +36,15 @@ export default function ConsultaDetallesModal({
       const res = await fetch(`/api/consultas/${consulta.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tipoConsulta, horario, estado, fecha }),
+        body: JSON.stringify({
+          tipoConsulta,
+          horario,
+          estado,
+          fecha,
+          peso: peso ? parseFloat(peso) : null, // ✅ Convertimos `peso` a Float o lo dejamos `null`
+        }),
       });
-
+  
       if (res.ok) {
         toast.success("Consulta actualizada correctamente.");
         refreshCalendar();
@@ -48,6 +56,7 @@ export default function ConsultaDetallesModal({
       toast.error("Error en la solicitud.");
     }
   };
+  
 
   const handleVerPerfilPaciente = () => {
     if (consulta?.paciente?.id) {
@@ -59,7 +68,9 @@ export default function ConsultaDetallesModal({
 
   const handleEliminarConsulta = async () => {
     try {
-      const res = await fetch(`/api/consultas/${consulta.id}`, { method: "DELETE" });
+      const res = await fetch(`/api/consultas/${consulta.id}`, {
+        method: "DELETE",
+      });
 
       if (res.ok) {
         toast.success("Consulta eliminada correctamente.");
@@ -81,8 +92,13 @@ export default function ConsultaDetallesModal({
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm z-50">
       <div className="bg-white p-6 rounded-lg shadow-lg w-[400px] border border-gray-300 z-50 space-y-4">
         <div className="flex justify-between items-center">
-          <h2 className="text-xl font-semibold text-gray-800">Detalles de la Consulta</h2>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+          <h2 className="text-xl font-semibold text-gray-800">
+            Detalles de la Consulta
+          </h2>
+          <button
+            onClick={onClose}
+            className="text-gray-500 hover:text-gray-700"
+          >
             <XCircle className="w-6 h-6" />
           </button>
         </div>
@@ -97,7 +113,10 @@ export default function ConsultaDetallesModal({
               value={pacienteNombre}
               disabled
             />
-            <button onClick={handleVerPerfilPaciente} title="Ver perfil del paciente">
+            <button
+              onClick={handleVerPerfilPaciente}
+              title="Ver perfil del paciente"
+            >
               <UserCircle className="w-7 h-7 text-blue-500 hover:text-blue-700 transition-all" />
             </button>
           </div>
@@ -132,11 +151,30 @@ export default function ConsultaDetallesModal({
             })}
           </select>
         </div>
+        {/* 🔹 Peso del Paciente */}
+        <div>
+          <label className="block text-gray-700 font-medium">Peso (kg):</label>
+          <input
+            className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-400"
+            type="number"
+            min="30"
+            max="300"
+            step="0.1"
+            value={peso}
+            onChange={(e) => setPeso(e.target.value)}
+          />
+        </div>
 
         {/* 🔹 Tipo de Consulta */}
         <div>
-          <label className="block text-gray-700 font-medium">Tipo de Consulta:</label>
-          <select className="w-full p-2 border rounded" value={tipoConsulta} onChange={(e) => setTipoConsulta(e.target.value)}>
+          <label className="block text-gray-700 font-medium">
+            Tipo de Consulta:
+          </label>
+          <select
+            className="w-full p-2 border rounded"
+            value={tipoConsulta}
+            onChange={(e) => setTipoConsulta(e.target.value)}
+          >
             <option value="primera">Primera</option>
             <option value="seguimiento">Seguimiento</option>
           </select>
@@ -145,7 +183,11 @@ export default function ConsultaDetallesModal({
         {/* 🔹 Estado */}
         <div>
           <label className="block text-gray-700 font-medium">Estado:</label>
-          <select className="w-full p-2 border rounded" value={estado} onChange={(e) => setEstado(e.target.value)}>
+          <select
+            className="w-full p-2 border rounded"
+            value={estado}
+            onChange={(e) => setEstado(e.target.value)}
+          >
             <option value="pendiente">Pendiente</option>
             <option value="confirmada">Confirmada</option>
             <option value="cancelada">Cancelada</option>
@@ -174,13 +216,23 @@ export default function ConsultaDetallesModal({
       {isConfirmModalOpen && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm z-50">
           <div className="bg-white p-6 rounded-lg shadow-lg w-[350px] border border-gray-300 z-50 text-center space-y-4">
-            <h2 className="text-xl font-semibold text-gray-800">Eliminar Consulta</h2>
-            <p className="text-gray-600">¿Estás seguro de que deseas eliminar esta consulta?</p>
+            <h2 className="text-xl font-semibold text-gray-800">
+              Eliminar Consulta
+            </h2>
+            <p className="text-gray-600">
+              ¿Estás seguro de que deseas eliminar esta consulta?
+            </p>
             <div className="flex justify-between">
-              <button className="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500" onClick={() => setIsConfirmModalOpen(false)}>
+              <button
+                className="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500"
+                onClick={() => setIsConfirmModalOpen(false)}
+              >
                 Cancelar
               </button>
-              <button className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600" onClick={handleEliminarConsulta}>
+              <button
+                className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+                onClick={handleEliminarConsulta}
+              >
                 Eliminar
               </button>
             </div>

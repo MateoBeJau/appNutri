@@ -1,6 +1,6 @@
 import Image from "next/image";
 import React from "react";
-import { IoCalendarOutline, IoChatbubbleEllipsesOutline, IoLogoReact, IoPersonOutline } from "react-icons/io5";
+import { IoBarChartOutline, IoCalendarOutline, IoChatbubbleEllipsesOutline, IoLogoReact, IoPersonOutline } from "react-icons/io5";
 import SidebarMenuItem from "./SidebarMenuItem";
 import path from "path";
 
@@ -42,9 +42,29 @@ const menuItems = [
         {
           path: "/dashboard/agenda/proximasConsultas",
           title: "Proximas consultas",
+        },        {
+          path: "/dashboard/agenda/consultasRealizadas",
+          title: "Historial de  consultas",
         },
       ],
     },
+    {
+      path: "/dashboard/estadisticas",
+      icon: <IoBarChartOutline size={40} />,
+      title: "Estadísticas",
+      subTitle: "Resumen y análisis de consultas",
+      subItems: [
+        {
+          path: "/dashboard/estadistica",
+          title: "Panel de Estadísticas",
+        },
+        {
+          path: "/dashboard/estadistica/estadisticaImc",
+          title: "Estadistica IMC",
+        },
+      ],
+    },
+    
   ];
   
 

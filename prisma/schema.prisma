@@ -45,6 +45,7 @@ model Consulta {
   tipoConsulta String    // "primera" | "seguimiento"
   estado       String    // "pendiente" | "confirmada" | "cancelada"
   notas        String?   
+  peso        Float?    // Nuevo campo para guardar el peso del paciente en cada consulta
 
   // 🔥 Restricción única: Evita duplicados en la misma fecha y horario
   @@unique([fecha, horario])

@@ -2,13 +2,13 @@
 
 import { useState, useEffect } from "react";
 import DataTable from "react-data-table-component";
-import { format, parseISO, isAfter, startOfDay } from "date-fns";
+import { format, isBefore, startOfDay } from "date-fns";
 import { es } from "date-fns/locale";
-import { FaEdit, FaTrash, FaUser } from "react-icons/fa";
+import { FaUser } from "react-icons/fa";
 import ConsultaDetalleModal from "../components/ConsultaDetalleModal";
 import Link from "next/link";
 
-const ProximasConsultas = () => {
+const ConsultasRealizadas = () => {
   const [consultations, setConsultations] = useState([]);
   const [search, setSearch] = useState("");
   const [filteredConsultations, setFilteredConsultations] = useState([]);
@@ -21,27 +21,28 @@ const ProximasConsultas = () => {
         const response = await fetch("/api/consultas");
         const data = await response.json();
         const today = startOfDay(new Date());
-        
-        const formattedData = data.map((consulta: any) => {
-          const fechaUTC = new Date(consulta.fecha);
-          const fechaLocal = new Date(
-            fechaUTC.getUTCFullYear(),
-            fechaUTC.getUTCMonth(),
-            fechaUTC.getUTCDate()
-          );
-          
-          return {
-            id: consulta.id,
-            fecha: fechaLocal,
-            formattedFecha: format(fechaLocal, "dd 'de' MMMM yyyy", { locale: es }),
-            horario: consulta.horario,
-            tipoConsulta: consulta.tipoConsulta,
-            paciente: consulta.paciente,
-            estado: consulta.estado,
-          };
-        })
-        .filter((consulta: any) => isAfter(consulta.fecha, today) || consulta.fecha.getTime() === today.getTime())
-        .sort((a:any, b:any) => a.fecha.getTime() - b.fecha.getTime());
+
+        const formattedData = data
+          .map((consulta: any) => {
+            const fechaUTC = new Date(consulta.fecha);
+            const fechaLocal = new Date(
+              fechaUTC.getUTCFullYear(),
+              fechaUTC.getUTCMonth(),
+              fechaUTC.getUTCDate()
+            );
+
+            return {
+              id: consulta.id,
+              fecha: fechaLocal,
+              formattedFecha: format(fechaLocal, "dd 'de' MMMM yyyy", { locale: es }),
+              horario: consulta.horario,
+              tipoConsulta: consulta.tipoConsulta,
+              paciente: consulta.paciente,
+              estado: consulta.estado,
+            };
+          })
+          .filter((consulta: any) => isBefore(consulta.fecha, today)) // ✅ FILTRAMOS SOLO CONSULTAS PASADAS
+          .sort((a: any, b: any) => b.fecha.getTime() - a.fecha.getTime()); // ✅ ORDENAMOS DE MÁS RECIENTE A MÁS ANTIGUA
 
         setConsultations(formattedData);
         setFilteredConsultations(formattedData);
@@ -61,13 +62,11 @@ const ProximasConsultas = () => {
   }, [search, consultations]);
 
   const openModal = (consulta: any) => {
-    console.log("Abriendo modal con consulta:", consulta);
     setSelectedConsulta(consulta);
     setModalOpen(true);
   };
 
   const closeModal = () => {
-    console.log("Cerrando modal");
     setSelectedConsulta(null);
     setModalOpen(false);
   };
@@ -82,14 +81,13 @@ const ProximasConsultas = () => {
       name: "Fecha",
       selector: (row: any) => row.formattedFecha,
       sortable: true,
-      sortFunction: (a: any, b: any) => a.fecha.getTime() - b.fecha.getTime(),
+      sortFunction: (a: any, b: any) => b.fecha.getTime() - a.fecha.getTime(), // Ordena de más reciente a más antigua
     },
     {
       name: "Horario",
       selector: (row: any) => row.horario,
       sortable: true,
     },
-
     {
       name: "Estado",
       selector: (row: any) => row.estado,
@@ -97,8 +95,11 @@ const ProximasConsultas = () => {
       cell: (row: any) => (
         <span
           className={`px-2 py-1 rounded-md text-white ${
-            row.estado === "pendiente" ? "bg-yellow-500" :
-            row.estado === "confirmada" ? "bg-green-500" : "bg-red-500"
+            row.estado === "pendiente"
+              ? "bg-yellow-500"
+              : row.estado === "confirmada"
+              ? "bg-green-500"
+              : "bg-red-500"
           }`}
         >
           {row.estado}
@@ -113,10 +114,9 @@ const ProximasConsultas = () => {
             className="px-3 py-1 bg-blue-500 text-white rounded-md flex items-center gap-1"
             onClick={() => openModal(row)}
           >
-            <FaEdit /> Editar
+            Ver Detalles
           </button>
 
-        
           <Link href={`/dashboard/pacientes/${row.paciente.id}`} className="px-3 py-1 bg-gray-500 text-white rounded-md flex items-center gap-1">
             <FaUser /> Ver Perfil
           </Link>
@@ -127,7 +127,7 @@ const ProximasConsultas = () => {
 
   return (
     <div className="p-6 bg-white shadow rounded-lg">
-      <h2 className="text-2xl font-bold mb-4">Consultas Próximas</h2>
+      <h2 className="text-2xl font-bold mb-4">Consultas Realizadas</h2>
       <div className="mb-4 flex justify-between">
         <input
           type="text"
@@ -155,4 +155,4 @@ const ProximasConsultas = () => {
   );
 };
 
-export default ProximasConsultas;
+export default ConsultasRealizadas;

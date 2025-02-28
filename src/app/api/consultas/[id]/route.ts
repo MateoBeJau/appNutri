@@ -5,25 +5,32 @@ const prisma = new PrismaClient();
 
 // 📌 Editar una consulta
 export async function PUT(req: Request, { params }: { params: { id: string } }) {
-    try {
-      const body = await req.json();
-
-      const consulta = await prisma.consulta.update({
-        where: { id: params.id },
-        data: {
-          tipoConsulta: body.tipoConsulta,
-          horario: body.horario,
-          estado: body.estado,
-          fecha: new Date(body.fecha), // 🔹 Convertimos la fecha al formato correcto
-        },
-      });
-
-      return NextResponse.json(consulta, { status: 200 });
-    } catch (error) {
-      console.error("❌ Error al actualizar consulta:", error);
-      return NextResponse.json({ error: "Error al actualizar consulta" }, { status: 500 });
+  try {
+    const body = await req.json();
+    let peso = body.peso ? parseFloat(body.peso) : null; // Convertimos `peso` a Float o lo dejamos `null`
+    
+    if (peso !== null && (isNaN(peso) || peso < 30 || peso > 300)) {
+      return NextResponse.json({ error: "El peso debe estar entre 30kg y 300kg" }, { status: 400 });
     }
+
+    const consulta = await prisma.consulta.update({
+      where: { id: params.id },
+      data: {
+        tipoConsulta: body.tipoConsulta,
+        horario: body.horario,
+        estado: body.estado,
+        fecha: new Date(body.fecha),
+        peso: peso, // ✅ Guardamos el peso
+      },
+    });
+
+    return NextResponse.json(consulta, { status: 200 });
+  } catch (error) {
+    console.error("❌ Error al actualizar consulta:", error);
+    return NextResponse.json({ error: "Error al actualizar consulta" }, { status: 500 });
   }
+}
+
 
 // 📌 Eliminar una consulta
 export async function DELETE(req: Request, { params }: { params: { id: string } }) {

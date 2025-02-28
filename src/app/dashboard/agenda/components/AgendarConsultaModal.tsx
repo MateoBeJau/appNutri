@@ -8,6 +8,7 @@ import {
   User,
   ClipboardCheck,
   XCircle,
+  Weight,
 } from "lucide-react";
 
 export default function AgendarConsultaModal({
@@ -21,6 +22,7 @@ export default function AgendarConsultaModal({
   const [tipoConsulta, setTipoConsulta] = useState("primera");
   const [horario, setHorario] = useState("");
   const [fechaSeleccionada, setFechaSeleccionada] = useState("");
+  const [peso, setPeso] = useState("");
 
   useEffect(() => {
     const fetchPacientes = async () => {
@@ -65,39 +67,50 @@ export default function AgendarConsultaModal({
       toast.error("Selecciona un paciente.");
       return;
     }
-
+    if (peso && (isNaN(parseFloat(peso)) || parseFloat(peso) < 30 || parseFloat(peso) > 300)) {
+      toast.error("Ingrese un peso válido entre 30kg y 300kg.");
+      return;
+    }
+  
     const fechaLocal = new Date(`${fechaSeleccionada}T00:00:00`);
     const fechaUTC = new Date(
       fechaLocal.getTime() - fechaLocal.getTimezoneOffset() * 60000
     );
-
+  
     const consulta = {
       pacienteId,
       fecha: fechaUTC.toISOString(),
       horario,
       tipoConsulta,
       estado: "pendiente",
+      peso: peso ? parseFloat(peso) : null, // ✅ Aseguramos que `peso` sea `null` si no se ingresa
     };
-
+  
+    console.log("📌 Enviando consulta a la API:", consulta);
+  
     try {
       const res = await fetch("/api/consultas", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(consulta),
       });
-
+  
+      const responseData = await res.json();
+  
       if (res.ok) {
         toast.success("Consulta agendada correctamente.");
         refreshCalendar();
         onClose();
       } else {
-        toast.error("Error al agendar consulta.");
+        toast.error(`Error al agendar consulta: ${responseData.error}`);
+        console.error("❌ Respuesta del servidor:", responseData);
       }
     } catch (error) {
       toast.error("Error en la solicitud.");
       console.error("❌ Error en la solicitud:", error);
     }
   };
+  
 
   if (!isOpen) return null;
 
@@ -186,6 +199,23 @@ export default function AgendarConsultaModal({
             <option value="primera">Primera</option>
             <option value="seguimiento">Seguimiento</option>
           </select>
+        </div>
+
+        {/* 🔹 Peso del Paciente */}
+        <div>
+          <label className="text-gray-700 font-medium flex items-center gap-2">
+            <Weight className="w-5 h-5 text-gray-500" />
+            Peso (kg):
+          </label>
+          <input
+            className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-400"
+            type="number"
+            min="30"
+            max="300"
+            step="0.1"
+            value={peso}
+            onChange={(e) => setPeso(e.target.value)}
+          />
         </div>
 
         {/* 🔹 Botones de Acción */}
